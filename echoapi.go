@@ -40,7 +40,7 @@ func outputRequestdata(r *http.Request) {
 	}
 
 	if err := json.Unmarshal(bodyJSON, requestData.Body); err != nil {
-		fmt.Println(err)
+		fmt.Println("Invalid json received in body.")
 	}
 
 	output, err := json.MarshalIndent(requestData, "", "  ")
