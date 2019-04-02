@@ -26,7 +26,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		requestBody, _ := ioutil.ReadAll(r.Body)
-		logToConsole(r.URL.Path, r.Method, requestBody)
+		logToConsole(r.URL.RequestURI(), r.Method, requestBody)
 		switch r.Method {
 		case "GET":
 			w.Write(staticResponse)
