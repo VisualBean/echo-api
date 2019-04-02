@@ -25,10 +25,13 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		outputRequestdata(r)
+		requestBody, _ := ioutil.ReadAll(r.Body)
+		logToConsole(r.URL.Path, r.Method, requestBody)
 		switch r.Method {
 		case "GET":
 			w.Write(staticResponse)
+		case "POST":
+			staticResponse = requestBody
 		case "DELETE":
 			staticResponse = nil
 		}
@@ -40,18 +43,13 @@ func main() {
 	fmt.Scanln()
 }
 
-func outputRequestdata(r *http.Request) {
-	bodyJSON, _ := ioutil.ReadAll(r.Body)
+func logToConsole(uri string, httpMethod string, body []byte) {
 
-	if r.Method == "POST" {
-		staticResponse = bodyJSON
-	}
-
-	requestData := input{Method: r.Method,
+	requestData := input{Method: httpMethod,
 		Body: new(interface{}),
 	}
 
-	if err := json.Unmarshal(bodyJSON, requestData.Body); err != nil {
+	if err := json.Unmarshal(body, requestData.Body); err != nil {
 		fmt.Println("Invalid json received in body.")
 	}
 
@@ -60,8 +58,7 @@ func outputRequestdata(r *http.Request) {
 		fmt.Println(err)
 	}
 
-	fmt.Println(time.Now().Format("2006-01-02 15:04:05"), "at", r.URL)
+	fmt.Println(time.Now().Format("2006-01-02 15:04:05"), "at", uri)
 	fmt.Print(string(output))
 	fmt.Println("\n")
-
 }
