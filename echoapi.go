@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	port = flag.String("port", "8000", "The port to run the service on. (default: 8000)")
+	port           = flag.String("port", "8000", "The port to run the service on. (default: 8000)")
+	staticResponse []byte
 )
 
 type input struct {
@@ -23,17 +24,28 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		outputRequestdata(r)
+		switch r.Method {
+		case "GET":
+			w.Write(staticResponse)
+		case "DELETE":
+			staticResponse = nil
+		}
 	})
 
 	go http.ListenAndServe(":"+*port, nil)
 
-	log.Println("Echo-API started.", "Listening on", *port, "press <ENTER> to exit")
+	log.Println("Echo-API started.", "Listening on", "http://localhost:"+*port, "press <ENTER> to exit")
 	fmt.Scanln()
 }
 
 func outputRequestdata(r *http.Request) {
 	bodyJSON, _ := ioutil.ReadAll(r.Body)
+
+	if r.Method == "POST" {
+		staticResponse = bodyJSON
+	}
 
 	requestData := input{Method: r.Method,
 		Body: new(interface{}),
@@ -51,4 +63,5 @@ func outputRequestdata(r *http.Request) {
 	fmt.Println(time.Now().Format("2006-01-02 15:04:05"), "at", r.URL)
 	fmt.Print(string(output))
 	fmt.Println("\n")
+
 }
